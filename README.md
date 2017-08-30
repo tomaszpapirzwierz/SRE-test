@@ -9,7 +9,7 @@
 ## Preface
 
 
-The application will is deployed in AWS cloud platform. I am using Red Hat Enterprise Linux 7.3 AMI (ami-40a8bf24). For the given task I decided to deploy three EC2 instances (t2.micro)
+The application is deployed in AWS cloud platform. I am using Red Hat Enterprise Linux 7.3 AMI (ami-40a8bf24). For the given task I decided to deploy three EC2 instances (t2.micro)
 	- RevProxy
 	- AppServer1
 	- AppServer2
@@ -17,6 +17,8 @@ The application will is deployed in AWS cloud platform. I am using Red Hat Enter
 The sample "Hello World" application is a .war package originating from tomcat (see reference 5). It is deployed in two AppServers, each placed in different region (eu-west-2a and eu-west-2b) to provide the high availability.
 
 The RevProxy server acts as a reverse proxy to AppServers and as a load balancer between these two.
+
+For build and deploy automation I am using Ansible.
 
 ## Deployment instructions
 
@@ -44,6 +46,16 @@ The RevProxy server acts as a reverse proxy to AppServers and as a load balancer
 	- deploy the sample.war application in Appserver1 and Appserver2
 
 9. Verify if the deployment was successful: on your local machine, open a web browser and type the RevProxy URL which proxies to the AppServers: http://<RevProxy_IP_address>:8080/sample
+
+## Next possible steps to tune the deployment
+
+It would be advisable to enable the scaling for both AppServers in case of an increased number of requests. I did not provide a working solution for this particular functionality but I do know how important it is and I have the idea how to implement it. For this scenario I would use the scaling-out approach, that is adding additional instances when necessary.
+
+1. Once the AppServers are deployed a new Launch Configuration should be created. This is a template which will be used to create new instances in case a scaling event occurs. The template provides the instance type, AMI, key pair, security groups and device mappings.
+
+2. Secondly, a Scaling Group should be created, which is a collection of instances sharing similar characteristics, in our case these are the AppServer instances. Within the Scaling Group, a Scaling Policies can be created which will determine under what conditions scaling-out occurs. One of the conditions may be the CPU utilization exceeding a specific threshold. This is how an alarm, created by the CloudFormation template, can be utilized.
+
+3. Lastly, once the new instances are running, an AWS CodeDeploy could be used to configure the newly added instances (e.g. configure tomcat, deploy the .war application) and modify the apache settings in RevProxy server.
 
 
 ## References
