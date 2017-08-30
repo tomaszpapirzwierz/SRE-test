@@ -1,0 +1,109 @@
+#Define operator's e-mail
+Parameters:
+  OperatorEmail:
+    Default: <operator_email>
+    Description: Email address to notify if there are any operational issues
+    Type: String
+#Define the Key name
+  KeyName:
+    ConstraintDescription: <key_name>
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances
+    Type: AWS::EC2::KeyPair::KeyName
+  SecurityGroups:
+    Default: <security_group_name>
+    Type: String
+  InstanceTypeParameter: 
+    Type: String
+    Default: t2.micro
+#Define resources
+Resources:
+  RevProxy:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      AvailabilityZone: eu-west-2a
+      ImageId: ami-40a8bf24
+      KeyName:
+        Ref: KeyName
+      InstanceType:
+        Ref: InstanceTypeParameter
+      SecurityGroups:
+      - Ref: SecurityGroups
+  AppServer1:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      AvailabilityZone: eu-west-2a
+      ImageId: ami-40a8bf24
+      KeyName:
+        Ref: KeyName
+      InstanceType:
+        Ref: InstanceTypeParameter
+      SecurityGroups:
+      - Ref: SecurityGroups
+  AppServer2:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      AvailabilityZone: eu-west-2b
+      ImageId: ami-40a8bf24
+      KeyName:
+        Ref: KeyName
+      InstanceType:
+        Ref: InstanceTypeParameter
+      SecurityGroups:
+      - Ref: SecurityGroups
+#Create an alarm for AppServer1 to trigger if CPU Utilization is >80% in 10 minutes period
+  CPUAlarmHigh1:
+    Type: "AWS::CloudWatch::Alarm"
+    Properties:
+      EvaluationPeriods: 1
+      Statistic: Average
+      Threshold: 80
+      AlarmDescription: Alarm if CPU too high or metric disappears indicating instance is down
+      Period: 600
+      AlarmActions:
+        -
+          Ref: AlarmTopic
+      Namespace: AWS/EC2
+      InsufficientDataActions:
+        -
+          Ref: AlarmTopic
+      Dimensions:
+        -
+          Name: AppServer1
+          Value:
+            Ref: AppServer1         
+      ComparisonOperator: GreaterThanThreshold
+      MetricName: CPUUtilization
+#Create an alarm for AppServer2 to trigger if CPU Utilization is >80% in 10 minutes period
+  CPUAlarmHigh1:
+    Type: "AWS::CloudWatch::Alarm"
+    Properties:
+      EvaluationPeriods: 1
+      Statistic: Average
+      Threshold: 80
+      AlarmDescription: Alarm if CPU too high or metric disappears indicating instance is down
+      Period: 600
+      AlarmActions:
+        -
+          Ref: AlarmTopic
+      Namespace: AWS/EC2
+      InsufficientDataActions:
+        -
+          Ref: AlarmTopic
+      Dimensions:
+        -
+          Name: AppServer2
+          Value:
+            Ref: AppServer2        
+      ComparisonOperator: GreaterThanThreshold
+      MetricName: CPUUtilization
+#Create an AWS topic to receive alarm notification to e-mail
+  AlarmTopic:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      DisplayName: Email notification topic
+      Subscription:
+        -
+          Endpoint:
+            Ref: OperatorEmail
+          Protocol: email
+
