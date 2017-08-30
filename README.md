@@ -9,10 +9,7 @@
 ## Preface
 
 
-The application is deployed in AWS cloud platform. I am using Red Hat Enterprise Linux 7.3 AMI (ami-40a8bf24). For the given task I decided to deploy three EC2 instances (t2.micro)
-	- RevProxy
-	- AppServer1
-	- AppServer2
+The application is deployed in AWS cloud platform. I am using Red Hat Enterprise Linux 7.3 AMI (ami-40a8bf24). For the given task I decided to deploy three EC2 instances (t2.micro): RevProxy, AppServer1, AppServer2.
 
 The sample "Hello World" application is a .war package originating from tomcat (see reference 5). It is deployed in two AppServers, each placed in different region (eu-west-2a and eu-west-2b) to provide the high availability.
 
@@ -41,7 +38,7 @@ For build and deploy automation I am using Ansible.
 7. Copy this public key and append to /home/ec2-user/.ssh/authorized_keys file in RevProxy and two Appservers.
 
 8. On your local machine navigate to ansible_config folder and run: ansible-playbook -i hosts site.yml; this will:
-	- install and configure the apache reverse proxy in [revproxy]
+	- install and configure the apache reverse proxy in RevProxy
 	- install and configure the tomcat server in Appserver1 and Appserver2
 	- deploy the sample.war application in Appserver1 and Appserver2
 
